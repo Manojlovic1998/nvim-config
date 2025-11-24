@@ -142,6 +142,7 @@ require("lazy").setup({
 ├── init.lua          # Main configuration file
 ├── LICENSE           # License information
 └── README.md         # This file
+└── tmux-config/     # Tmux configuration files
 ```
 
 ## Customization
