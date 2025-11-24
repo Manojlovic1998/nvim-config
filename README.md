@@ -2,11 +2,11 @@
 
 ![Neovim](https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExNWg0MXpja3l0d2dsMjIwNGhycTF6cXNjcnZzMnF6OTIyMG84YjlwaCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/ym6PmLonLGfv2/giphy.gif)
 
-A minimal Neovim configuration using lazy.nvim as the plugin manager with Catppuccin colorscheme and Telescope fuzzy finder.
+A minimal Neovim configuration using lazy.nvim as the plugin manager with Catppuccin colorscheme, Telescope fuzzy finder, and Treesitter syntax highlighting.
 
 ## Overview
 
-This configuration provides a clean, minimal setup for Neovim with modern plugin management, a beautiful color scheme, and powerful fuzzy finding capabilities. It's designed to be simple yet extensible.
+This configuration provides a clean, minimal setup for Neovim with modern plugin management, a beautiful color scheme, powerful fuzzy finding capabilities, and advanced syntax highlighting. It's designed to be simple yet extensible.
 
 ## Requirements
 
@@ -22,6 +22,7 @@ This configuration provides a clean, minimal setup for Neovim with modern plugin
 - **Modern Plugin Management**: Uses [lazy.nvim](https://github.com/folke/lazy.nvim) for fast and efficient plugin loading
 - **Beautiful Theme**: Catppuccin Frappe colorscheme for a pleasant coding experience
 - **Fuzzy Finding**: Telescope for fast file and text searching
+- **Syntax Highlighting**: Treesitter for accurate, context-aware syntax highlighting and code understanding
 - **Sensible Defaults**: Pre-configured indentation settings using spaces
 - **Automatic Updates**: Plugin checker enabled to keep dependencies up-to-date
 - **Custom Keybindings**: Configured shortcuts for common operations
@@ -67,9 +68,18 @@ Currently configured plugins:
   - Flavour: Frappe
   - Automatically applied as the colorscheme
 - **Telescope**: Highly extendable fuzzy finder
+
   - Version: v0.1.9 (stable tag)
   - Dependencies: plenary.nvim
   - Configured to ignore `node_modules` in live grep searches
+
+- **Treesitter**: Advanced syntax highlighting and code parsing
+  - Branch: master
+  - Lazy loading: disabled (loads immediately)
+  - Auto-update parsers on install
+  - Pre-configured languages: JavaScript, Markdown, Vim, Vimdoc, Lua
+  - Auto-install parsers for opened file types
+  - Syntax highlighting and smart indentation enabled
 
 ### Telescope Configuration
 
@@ -84,6 +94,30 @@ telescope.setup({
 ```
 
 This configuration excludes `node_modules` directories from text searches to improve performance.
+
+### Treesitter Configuration
+
+```lua
+{
+  "nvim-treesitter/nvim-treesitter",
+  branch = 'master',
+  lazy = false,
+  build = ":TSUpdate",
+  ensure_installed = { "javascript", "markdown", "vim", "vimdoc", "lua" },
+  sync_install = false,
+  auto_install = true,
+  highlight = { enable = true },
+  indent = { enable = true },
+}
+```
+
+**Key features:**
+
+- **ensure_installed**: Guarantees these parsers are always installed
+- **auto_install**: Automatically installs parsers for new file types
+- **highlight**: Enables Treesitter-based syntax highlighting
+- **indent**: Enables smart, context-aware indentation
+- **build**: Runs `:TSUpdate` to update all parsers on plugin install/update
 
 ### Custom Keymaps
 
@@ -122,8 +156,10 @@ require("lazy").setup({
   spec = {
     { "catppuccin/nvim", name = "catppuccin", priority = 1000 },
     { "nvim-telescope/telescope.nvim", tag = "v0.1.9", dependencies = { "nvim-lua/plenary.nvim" } },
+    { "nvim-treesitter/nvim-treesitter", branch = "master", build = ":TSUpdate" },
     -- Add new plugins here, for example:
-    -- { "nvim-treesitter/nvim-treesitter", build = ":TSUpdate" },
+    -- { "neovim/nvim-lspconfig" }, -- LSP configurations
+    -- { "hrsh7th/nvim-cmp" },      -- Autocompletion
   },
   -- ... rest of config
 })
@@ -217,4 +253,5 @@ require("catppuccin").setup({
 - [lazy.nvim](https://github.com/folke/lazy.nvim)
 - [Catppuccin](https://github.com/catppuccin/nvim)
 - [Telescope](https://github.com/nvim-telescope/telescope.nvim)
+- [Treesitter](https://github.com/nvim-treesitter/nvim-treesitter)
 - [Ripgrep](https://github.com/BurntSushi/ripgrep)
