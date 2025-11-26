@@ -2,11 +2,11 @@
 
 ![Neovim](https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExNWg0MXpja3l0d2dsMjIwNGhycTF6cXNjcnZzMnF6OTIyMG84YjlwaCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/ym6PmLonLGfv2/giphy.gif)
 
-A minimal Neovim configuration using lazy.nvim as the plugin manager with Catppuccin colorscheme, Telescope fuzzy finder, and Treesitter syntax highlighting.
+A modern Neovim configuration using lazy.nvim as the plugin manager with Catppuccin colorscheme, Telescope fuzzy finder, Treesitter syntax highlighting, LSP support via Mason, and Neo-tree file explorer.
 
 ## Overview
 
-This configuration provides a clean, minimal setup for Neovim with modern plugin management, a beautiful color scheme, powerful fuzzy finding capabilities, and advanced syntax highlighting. It's designed to be simple yet extensible.
+This configuration provides a comprehensive setup for Neovim with modern plugin management, a beautiful color scheme, powerful fuzzy finding capabilities, advanced syntax highlighting, intelligent code completion, and LSP integration for TypeScript, Lua, and Angular development. The modular structure makes it easy to customize and extend.
 
 ## Requirements
 
@@ -19,10 +19,12 @@ This configuration provides a clean, minimal setup for Neovim with modern plugin
 
 ## Features
 
-- **Modern Plugin Management**: Uses [lazy.nvim](https://github.com/folke/lazy.nvim) for fast and efficient plugin loading
+- **Modern Plugin Management**: Uses [lazy.nvim](https://github.com/folke/lazy.nvim) for fast and efficient plugin loading with modular configuration
 - **Beautiful Theme**: Catppuccin Frappe colorscheme for a pleasant coding experience
-- **Fuzzy Finding**: Telescope for fast file and text searching
+- **Fuzzy Finding**: Telescope for fast file and text searching with UI enhancements
 - **Syntax Highlighting**: Treesitter for accurate, context-aware syntax highlighting and code understanding
+- **LSP Integration**: Mason-managed Language Server Protocol support for Lua, TypeScript, and Angular
+- **File Explorer**: Neo-tree for visual file system navigation
 - **Sensible Defaults**: Pre-configured indentation settings using spaces
 - **Automatic Updates**: Plugin checker enabled to keep dependencies up-to-date
 - **Custom Keybindings**: Configured shortcuts for common operations
@@ -61,25 +63,41 @@ Leader keys are set before loading plugins to ensure custom mappings work correc
 
 ### Plugin Configuration
 
-Currently configured plugins:
+All plugins are organized in separate files under `lua/plugins/` for better maintainability:
 
-- **Catppuccin**: A soothing pastel theme for Neovim
+- **Catppuccin** (`lua/plugins/catppuccin.lua`): A soothing pastel theme
   - Priority: 1000 (loaded early)
   - Flavour: Frappe
   - Automatically applied as the colorscheme
-- **Telescope**: Highly extendable fuzzy finder
+- **Telescope** (`lua/plugins/telescope.lua`): Highly extendable fuzzy finder
 
   - Version: v0.1.9 (stable tag)
   - Dependencies: plenary.nvim
+  - Extensions: telescope-ui-select for enhanced UI selections
   - Configured to ignore `node_modules` in live grep searches
 
-- **Treesitter**: Advanced syntax highlighting and code parsing
+- **Treesitter** (`lua/plugins/treesitter.lua`): Advanced syntax highlighting
+
   - Branch: master
   - Lazy loading: disabled (loads immediately)
   - Auto-update parsers on install
   - Pre-configured languages: JavaScript, Markdown, Vim, Vimdoc, Lua
   - Auto-install parsers for opened file types
   - Syntax highlighting and smart indentation enabled
+
+- **Mason & LSP** (`lua/plugins/mason-lsp-manager.lua`): Language server management
+
+  - Mason: LSP server installer and manager
+  - Mason-lspconfig: Bridge between Mason and nvim-lspconfig
+  - nvim-lspconfig: LSP client configurations
+  - Pre-installed servers: lua_ls (Lua), ts_ls (TypeScript), angularls (Angular)
+  - Enabled servers: lua_ls, tsserver, eslint, angularls
+
+- **Neo-tree** (`lua/plugins/neo-tree.lua`): File system explorer
+  - Branch: v3.x
+  - Dependencies: plenary.nvim, nui.nvim, nvim-web-devicons
+  - Lazy loading: false (always available)
+  - Keybinding: `Ctrl+N` to toggle file tree
 
 ### Telescope Configuration
 
@@ -119,12 +137,53 @@ This configuration excludes `node_modules` directories from text searches to imp
 - **indent**: Enables smart, context-aware indentation
 - **build**: Runs `:TSUpdate` to update all parsers on plugin install/update
 
+### Mason & LSP Configuration
+
+```lua
+-- Mason setup
+require("mason").setup()
+
+-- Mason-lspconfig setup
+require("mason-lspconfig").setup({
+  ensure_installed = { "lua_ls", "ts_ls", "angularls" },
+})
+
+-- Enable LSP servers
+vim.lsp.enable("lua_ls")      -- Lua language server
+vim.lsp.enable("tsserver")    -- TypeScript server
+vim.lsp.enable("eslint")      -- ESLint server
+vim.lsp.enable("angularls")   -- Angular language server
+```
+
+**Key features:**
+
+- **Mason**: Provides a UI (`:Mason`) to install/manage LSP servers, DAP servers, linters, and formatters
+- **Automatic installation**: Specified servers are automatically installed on first launch
+- **Language support**: Pre-configured for Lua, TypeScript/JavaScript, and Angular development
+- **Extensible**: Easy to add more language servers via `ensure_installed`
+
 ### Custom Keymaps
+
+#### Telescope
 
 | Key          | Mode   | Action               | Description              |
 | ------------ | ------ | -------------------- | ------------------------ |
 | `<C-p>`      | Normal | `builtin.find_files` | Find files in project    |
 | `<leader>fg` | Normal | `builtin.live_grep`  | Search text across files |
+
+#### LSP
+
+| Key          | Mode          | Action                    | Description                 |
+| ------------ | ------------- | ------------------------- | --------------------------- |
+| `K`          | Normal        | `vim.lsp.buf.hover`       | Show documentation in hover |
+| `gd`         | Normal        | `vim.lsp.buf.definition`  | Go to definition            |
+| `<leader>ca` | Normal/Visual | `vim.lsp.buf.code_action` | Show code actions           |
+
+#### Neo-tree
+
+| Key     | Mode   | Action                            | Description      |
+| ------- | ------ | --------------------------------- | ---------------- |
+| `<C-n>` | Normal | `:Neotree filesystem reveal left` | Toggle file tree |
 
 ### Lazy.nvim Settings
 
@@ -149,21 +208,29 @@ This configuration excludes `node_modules` directories from text searches to imp
 
 ## Adding More Plugins
 
-To add new plugins, edit the `spec` table in the `require("lazy").setup()` call:
+The configuration uses a modular approach. Create a new file in `lua/plugins/` for each plugin:
+
+**Example: Adding nvim-cmp for autocompletion**
+
+Create `lua/plugins/nvim-cmp.lua`:
 
 ```lua
-require("lazy").setup({
-  spec = {
-    { "catppuccin/nvim", name = "catppuccin", priority = 1000 },
-    { "nvim-telescope/telescope.nvim", tag = "v0.1.9", dependencies = { "nvim-lua/plenary.nvim" } },
-    { "nvim-treesitter/nvim-treesitter", branch = "master", build = ":TSUpdate" },
-    -- Add new plugins here, for example:
-    -- { "neovim/nvim-lspconfig" }, -- LSP configurations
-    -- { "hrsh7th/nvim-cmp" },      -- Autocompletion
+return {
+  "hrsh7th/nvim-cmp",
+  dependencies = {
+    "hrsh7th/cmp-nvim-lsp",
+    "L3MON4D3/LuaSnip",
   },
-  -- ... rest of config
-})
+  config = function()
+    local cmp = require("cmp")
+    cmp.setup({
+      -- Your configuration here
+    })
+  end
+}
 ```
+
+Lazy.nvim automatically loads all files from `lua/plugins/` directory. No need to modify `init.lua`!
 
 ## Requirements
 
@@ -175,10 +242,20 @@ require("lazy").setup({
 
 ```
 .
-├── init.lua          # Main configuration file
-├── LICENSE           # License information
-└── README.md         # This file
-└── tmux-config/     # Tmux configuration files
+├── init.lua                              # Entry point - loads lazy.nvim
+├── lua/
+│   ├── config/
+│   │   └── lazy.lua                      # Lazy.nvim bootstrap & settings
+│   └── plugins/
+│       ├── catppuccin.lua                # Theme configuration
+│       ├── telescope.lua                 # Fuzzy finder setup
+│       ├── treesitter.lua                # Syntax highlighting
+│       ├── mason-lsp-manager.lua         # LSP management
+│       └── neo-tree.lua                  # File explorer
+├── tmux-config/                          # Tmux configuration files
+├── alacritty-config/                     # Alacritty terminal config
+├── LICENSE
+└── README.md
 ```
 
 ## Customization
@@ -237,14 +314,41 @@ Then in Neovim, run `:checkhealth` and look for terminal capabilities confirming
 - Navigate results with arrow keys or `Ctrl+j`/`Ctrl+k`
 - Press `Enter` to open a file
 
+### LSP Commands
+
+- **Hover Documentation**: Press `K` in normal mode to see documentation for symbol under cursor
+- **Go to Definition**: Press `gd` to jump to the definition of a symbol
+- **Code Actions**: Press `Space` + `ca` to see available code actions (fixes, refactoring, etc.)
+- **LSP Management**: Run `:Mason` to open the Mason UI for installing/managing language servers
+
+### Neo-tree File Explorer
+
+- **Toggle File Tree**: Press `Ctrl+N` to open/close the file explorer
+- Navigate with arrow keys or `j`/`k`
+- Press `Enter` to open a file
+- Press `?` inside Neo-tree to see all available commands
+
+### Managing Language Servers
+
+To add a new language server:
+
+1. Open the Mason UI with `:Mason`
+2. Search for your language server
+3. Press `i` to install
+4. Add it to `ensure_installed` in `lua/plugins/mason-lsp-manager.lua`
+5. Enable it with `vim.lsp.enable("server_name")`
+
 ### Changing Catppuccin Flavour
 
-To change the theme variant, edit the `flavour` in the Catppuccin setup:
+To change the theme variant, edit `lua/plugins/catppuccin.lua`:
 
 ```lua
-require("catppuccin").setup({
-  flavour = "frappe", -- Options: latte, frappe, macchiato, mocha
-})
+config = function()
+  require("catppuccin").setup({
+    flavour = "frappe", -- Options: latte, frappe, macchiato, mocha
+  })
+  vim.cmd.colorscheme "catppuccin-frappe"
+end
 ```
 
 ## References
@@ -254,4 +358,7 @@ require("catppuccin").setup({
 - [Catppuccin](https://github.com/catppuccin/nvim)
 - [Telescope](https://github.com/nvim-telescope/telescope.nvim)
 - [Treesitter](https://github.com/nvim-treesitter/nvim-treesitter)
+- [Mason](https://github.com/williamboman/mason.nvim)
+- [nvim-lspconfig](https://github.com/neovim/nvim-lspconfig)
+- [Neo-tree](https://github.com/nvim-neo-tree/neo-tree.nvim)
 - [Ripgrep](https://github.com/BurntSushi/ripgrep)
