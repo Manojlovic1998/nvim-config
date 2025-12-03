@@ -2,11 +2,11 @@
 
 ![Neovim](https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExNWg0MXpja3l0d2dsMjIwNGhycTF6cXNjcnZzMnF6OTIyMG84YjlwaCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/ym6PmLonLGfv2/giphy.gif)
 
-A modern Neovim configuration using lazy.nvim as the plugin manager with Catppuccin colorscheme, Telescope fuzzy finder, Treesitter syntax highlighting, LSP support via Mason, and Neo-tree file explorer.
+A modern Neovim configuration using lazy.nvim as the plugin manager with Catppuccin colorscheme, Telescope fuzzy finder, Treesitter syntax highlighting, LSP support via Mason, Neo-tree file explorer, None-ls for formatting/linting, and Snacks for enhanced UI features.
 
 ## Overview
 
-This configuration provides a comprehensive setup for Neovim with modern plugin management, a beautiful color scheme, powerful fuzzy finding capabilities, advanced syntax highlighting, intelligent code completion, and LSP integration for TypeScript, Lua, and Angular development. The modular structure makes it easy to customize and extend.
+This configuration provides a comprehensive setup for Neovim with modern plugin management, a beautiful color scheme, powerful fuzzy finding capabilities, advanced syntax highlighting, intelligent code completion, LSP integration for TypeScript, Lua, Angular, CSS, and Tailwind CSS development, automatic code formatting, and an enhanced dashboard experience. The modular structure makes it easy to customize and extend.
 
 ## Requirements
 
@@ -21,9 +21,11 @@ This configuration provides a comprehensive setup for Neovim with modern plugin 
 
 - **Modern Plugin Management**: Uses [lazy.nvim](https://github.com/folke/lazy.nvim) for fast and efficient plugin loading with modular configuration
 - **Beautiful Theme**: Catppuccin Frappe colorscheme for a pleasant coding experience
+- **Enhanced Dashboard**: Snacks.nvim dashboard with custom ASCII art on startup
 - **Fuzzy Finding**: Telescope for fast file and text searching with UI enhancements
 - **Syntax Highlighting**: Treesitter for accurate, context-aware syntax highlighting and code understanding
-- **LSP Integration**: Mason-managed Language Server Protocol support for Lua, TypeScript, and Angular
+- **LSP Integration**: Mason-managed Language Server Protocol support for Lua, TypeScript, Angular, CSS, and Tailwind CSS
+- **Formatting & Linting**: None-ls integration with Prettier, Stylua, and ESLint
 - **File Explorer**: Neo-tree for visual file system navigation
 - **Sensible Defaults**: Pre-configured indentation settings using spaces
 - **Automatic Updates**: Plugin checker enabled to keep dependencies up-to-date
@@ -90,8 +92,22 @@ All plugins are organized in separate files under `lua/plugins/` for better main
   - Mason: LSP server installer and manager
   - Mason-lspconfig: Bridge between Mason and nvim-lspconfig
   - nvim-lspconfig: LSP client configurations
-  - Pre-installed servers: lua_ls (Lua), ts_ls (TypeScript), angularls (Angular)
-  - Enabled servers: lua_ls, tsserver, eslint, angularls
+  - Pre-installed servers: lua_ls (Lua), ts_ls (TypeScript), angularls (Angular), cssls (CSS), tailwindcss (Tailwind CSS)
+  - Enabled servers: lua_ls, ts_ls, eslint, angularls
+  - Automatic installation enabled
+
+- **None-ls** (`lua/plugins/none-ls.lua`): Formatting and linting integration
+
+  - Formatters: Prettier (JavaScript/TypeScript/JSON/etc), Stylua (Lua)
+  - Linters: ESLint (with none-ls-extras)
+  - Additional: Spell completion
+  - Keybinding: `<leader>gf` to format current buffer
+
+- **Snacks** (`lua/plugins/snacks.nvim`): Enhanced UI features
+
+  - Priority: 1000 (loaded early)
+  - Dashboard enabled with custom ASCII art
+  - Lazy loading: false (always available)
 
 - **Neo-tree** (`lua/plugins/neo-tree.lua`): File system explorer
   - Branch: v3.x
@@ -145,12 +161,18 @@ require("mason").setup()
 
 -- Mason-lspconfig setup
 require("mason-lspconfig").setup({
-  ensure_installed = { "lua_ls", "ts_ls", "angularls" },
+  ensure_installed = {
+    "lua_ls",        -- Lua
+    "ts_ls",         -- TypeScript/JavaScript
+    "angularls",     -- Angular
+    "cssls",         -- CSS
+    "tailwindcss",   -- Tailwind CSS
+  },
 })
 
 -- Enable LSP servers
 vim.lsp.enable("lua_ls")      -- Lua language server
-vim.lsp.enable("tsserver")    -- TypeScript server
+vim.lsp.enable("ts_ls")       -- TypeScript server
 vim.lsp.enable("eslint")      -- ESLint server
 vim.lsp.enable("angularls")   -- Angular language server
 ```
@@ -159,8 +181,49 @@ vim.lsp.enable("angularls")   -- Angular language server
 
 - **Mason**: Provides a UI (`:Mason`) to install/manage LSP servers, DAP servers, linters, and formatters
 - **Automatic installation**: Specified servers are automatically installed on first launch
-- **Language support**: Pre-configured for Lua, TypeScript/JavaScript, and Angular development
+- **Language support**: Pre-configured for Lua, TypeScript/JavaScript, Angular, CSS, and Tailwind CSS development
 - **Extensible**: Easy to add more language servers via `ensure_installed`
+
+### None-ls Configuration
+
+```lua
+local null_ls = require("null-ls")
+
+null_ls.setup({
+  null_ls.builtins.completion.spell,              -- Spell completion
+  null_ls.builtins.formatting.stylua,             -- Lua formatter
+  null_ls.builtins.formatting.prettier,           -- JS/TS/JSON/etc formatter
+  require("none-ls.diagnostics.eslint"),          -- ESLint diagnostics
+})
+
+vim.keymap.set("n", "<leader>gf", vim.lsp.buf.format, {})
+```
+
+**Key features:**
+
+- **Formatters**: Automatically format code with Prettier and Stylua
+- **Linting**: ESLint integration for JavaScript/TypeScript projects
+- **Spell check**: Built-in spell completion support
+- **Dependencies**: Requires none-ls-extras.nvim for ESLint integration
+
+### Snacks Configuration
+
+```lua
+opts = {
+  dashboard = {
+    enabled = true,
+    preset = {
+      header = [[ Custom ASCII Art ]]
+    },
+  },
+}
+```
+
+**Key features:**
+
+- **Dashboard**: Custom welcome screen with ASCII art displayed on Neovim startup
+- **High priority**: Loads early to ensure dashboard appears first
+- **Always available**: Not lazy-loaded for immediate startup experience
 
 ### Custom Keymaps
 
@@ -178,6 +241,12 @@ vim.lsp.enable("angularls")   -- Angular language server
 | `K`          | Normal        | `vim.lsp.buf.hover`       | Show documentation in hover |
 | `gd`         | Normal        | `vim.lsp.buf.definition`  | Go to definition            |
 | `<leader>ca` | Normal/Visual | `vim.lsp.buf.code_action` | Show code actions           |
+
+#### Formatting (None-ls)
+
+| Key          | Mode   | Action               | Description           |
+| ------------ | ------ | -------------------- | --------------------- |
+| `<leader>gf` | Normal | `vim.lsp.buf.format` | Format current buffer |
 
 #### Neo-tree
 
@@ -251,6 +320,8 @@ Lazy.nvim automatically loads all files from `lua/plugins/` directory. No need t
 │       ├── telescope.lua                 # Fuzzy finder setup
 │       ├── treesitter.lua                # Syntax highlighting
 │       ├── mason-lsp-manager.lua         # LSP management
+│       ├── none-ls.lua                   # Formatting & linting
+│       ├── snacks.lua                    # Dashboard & UI enhancements
 │       └── neo-tree.lua                  # File explorer
 ├── tmux-config/                          # Tmux configuration files
 ├── alacritty-config/                     # Alacritty terminal config
@@ -321,6 +392,15 @@ Then in Neovim, run `:checkhealth` and look for terminal capabilities confirming
 - **Code Actions**: Press `Space` + `ca` to see available code actions (fixes, refactoring, etc.)
 - **LSP Management**: Run `:Mason` to open the Mason UI for installing/managing language servers
 
+### Formatting & Linting
+
+- **Format Code**: Press `Space` + `gf` to format the current buffer using configured formatters (Prettier, Stylua)
+- **Auto-format**: Formatters automatically detect file type and apply appropriate formatting
+- **ESLint**: Diagnostics appear automatically for JavaScript/TypeScript files
+- **External Dependencies**:
+  - Install Prettier globally: `npm install -g prettier`
+  - Install Stylua: `cargo install stylua` or via package manager
+
 ### Neo-tree File Explorer
 
 - **Toggle File Tree**: Press `Ctrl+N` to open/close the file explorer
@@ -360,5 +440,9 @@ end
 - [Treesitter](https://github.com/nvim-treesitter/nvim-treesitter)
 - [Mason](https://github.com/williamboman/mason.nvim)
 - [nvim-lspconfig](https://github.com/neovim/nvim-lspconfig)
+- [None-ls](https://github.com/nvimtools/none-ls.nvim)
+- [Snacks.nvim](https://github.com/folke/snacks.nvim)
 - [Neo-tree](https://github.com/nvim-neo-tree/neo-tree.nvim)
 - [Ripgrep](https://github.com/BurntSushi/ripgrep)
+- [Prettier](https://prettier.io/)
+- [Stylua](https://github.com/JohnnyMorganz/StyLua)
