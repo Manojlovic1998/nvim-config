@@ -1,6 +1,6 @@
 # nvim-config
 
-![Neovim](https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExNWg0MXpja3l0d2dsMjIwNGhycTF6cXNjcnZzMnF6OTIyMG84YjlwaCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/ym6PmLonLGfv2/giphy.gif)
+![Neovim](assets/images/current-preview.png)
 
 A modern Neovim configuration using lazy.nvim as the plugin manager with Catppuccin colorscheme, Telescope fuzzy finder, Treesitter syntax highlighting, LSP support via Mason, Neo-tree file explorer, None-ls for formatting/linting, Snacks for enhanced UI features, and zk-nvim for note-taking with Zettelkasten.
 
