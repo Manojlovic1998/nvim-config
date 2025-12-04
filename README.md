@@ -183,6 +183,9 @@ require("mason-lspconfig").setup({
   automatic_install = true,
 })
 
+-- Enable inlay hints globally
+vim.lsp.inlay_hint.enable(true)
+
 -- Enable LSP servers
 vim.lsp.enable("lua_ls")      -- Lua language server
 vim.lsp.enable("ts_ls")       -- TypeScript server
