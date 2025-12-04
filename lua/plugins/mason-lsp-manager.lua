@@ -16,19 +16,22 @@ return {
 			require("mason-lspconfig").setup({
 				-- Here you can add the languge servers you need
 				ensure_installed = {
-          "lua_ls",
-          "ts_ls",
-          "angularls",
-          "cssls",
-          "tailwindcss",
-        },
+					"lua_ls",
+					"ts_ls",
+					"angularls",
+					"cssls",
+					"tailwindcss",
+				},
+				automatic_install = true,
 			})
 		end,
-    automatic_install = true
 	},
 	{
 		"neovim/nvim-lspconfig",
 		config = function()
+			-- Enable inlay hints globally
+			vim.lsp.inlay_hint.enable(true)
+
 			vim.lsp.enable("lua_ls")
 			vim.lsp.enable("ts_ls")
 			vim.lsp.enable("eslint")
