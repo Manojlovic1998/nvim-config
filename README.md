@@ -2,11 +2,11 @@
 
 ![Neovim](https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExNWg0MXpja3l0d2dsMjIwNGhycTF6cXNjcnZzMnF6OTIyMG84YjlwaCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/ym6PmLonLGfv2/giphy.gif)
 
-A modern Neovim configuration using lazy.nvim as the plugin manager with Catppuccin colorscheme, Telescope fuzzy finder, Treesitter syntax highlighting, LSP support via Mason, Neo-tree file explorer, None-ls for formatting/linting, and Snacks for enhanced UI features.
+A modern Neovim configuration using lazy.nvim as the plugin manager with Catppuccin colorscheme, Telescope fuzzy finder, Treesitter syntax highlighting, LSP support via Mason, Neo-tree file explorer, None-ls for formatting/linting, Snacks for enhanced UI features, and zk-nvim for note-taking with Zettelkasten.
 
 ## Overview
 
-This configuration provides a comprehensive setup for Neovim with modern plugin management, a beautiful color scheme, powerful fuzzy finding capabilities, advanced syntax highlighting, intelligent code completion, LSP integration for TypeScript, Lua, Angular, CSS, and Tailwind CSS development, automatic code formatting, and an enhanced dashboard experience. The modular structure makes it easy to customize and extend.
+This configuration provides a comprehensive setup for Neovim with modern plugin management, a beautiful color scheme, powerful fuzzy finding capabilities, advanced syntax highlighting, intelligent code completion, LSP integration for TypeScript, Lua, Angular, CSS, and Tailwind CSS development, automatic code formatting, an enhanced dashboard experience, and integrated note-taking with zk for managing a Zettelkasten knowledge base. The modular structure makes it easy to customize and extend.
 
 ## Requirements
 
@@ -16,6 +16,10 @@ This configuration provides a comprehensive setup for Neovim with modern plugin 
 - Ripgrep (for Telescope text searching)
   - Telescope runs ripgrep as an external command-line process to search for text, making it a system-level dependency rather than a Neovim plugin itself.
   - Install it via your package manager, e.g., `brew install ripgrep` on macOS or `sudo apt install ripgrep` on Ubuntu.
+- zk CLI tool (for note-taking features)
+  - Required for zk-nvim to function
+  - Install from [zk-org/zk](https://github.com/zk-org/zk#installation)
+  - Provides LSP server and note management capabilities
 
 ## Features
 
@@ -27,6 +31,7 @@ This configuration provides a comprehensive setup for Neovim with modern plugin 
 - **LSP Integration**: Mason-managed Language Server Protocol support for Lua, TypeScript, Angular, CSS, and Tailwind CSS
 - **Formatting & Linting**: None-ls integration with Prettier, Stylua, and ESLint
 - **File Explorer**: Neo-tree for visual file system navigation
+- **Note-Taking**: zk-nvim integration for Zettelkasten-style note management with LSP support for Markdown
 - **Sensible Defaults**: Pre-configured indentation settings using spaces
 - **Automatic Updates**: Plugin checker enabled to keep dependencies up-to-date
 - **Custom Keybindings**: Configured shortcuts for common operations
@@ -110,10 +115,17 @@ All plugins are organized in separate files under `lua/plugins/` for better main
   - Lazy loading: false (always available)
 
 - **Neo-tree** (`lua/plugins/neo-tree.lua`): File system explorer
+
   - Branch: v3.x
   - Dependencies: plenary.nvim, nui.nvim, nvim-web-devicons
   - Lazy loading: false (always available)
   - Keybinding: `Ctrl+N` to toggle file tree
+
+- **zk-nvim** (`lua/plugins/zk-org.lua`): Zettelkasten note-taking integration
+  - LSP integration for Markdown files
+  - Auto-attach enabled for automatic activation
+  - Picker: Built-in select UI
+  - Commands available for note creation, linking, and searching
 
 ### Telescope Configuration
 
@@ -225,6 +237,40 @@ opts = {
 - **High priority**: Loads early to ensure dashboard appears first
 - **Always available**: Not lazy-loaded for immediate startup experience
 
+### zk-nvim Configuration
+
+```lua
+require('zk').setup({
+  picker = "select",
+  lsp = {
+    config = {
+      name = "zk",
+      cmd = { "zk", "lsp" },
+      filetypes = { "markdown" },
+    }
+  },
+  auto_attach = {
+    enabled = true,
+  }
+})
+```
+
+**Key features:**
+
+- **LSP Integration**: Provides LSP functionality for Markdown files in your zk notebook
+- **Auto-attach**: Automatically activates when opening Markdown files
+- **Built-in Picker**: Uses Neovim's native select UI for note selection
+- **Commands**: Provides `:Zk*` commands for creating notes, inserting links, and searching
+- **External Dependency**: Requires [zk](https://github.com/zk-org/zk) CLI tool installed
+
+**Common zk commands:**
+
+- `:ZkNew { title = "My Note" }` - Create a new note
+- `:ZkNotes` - List all notes
+- `:ZkLinks` - List links in current note
+- `:ZkBacklinks` - Show notes linking to current note
+- `:ZkTags` - List all tags
+
 ### Custom Keymaps
 
 #### Telescope
@@ -322,6 +368,7 @@ Lazy.nvim automatically loads all files from `lua/plugins/` directory. No need t
 │       ├── mason-lsp-manager.lua         # LSP management
 │       ├── none-ls.lua                   # Formatting & linting
 │       ├── snacks.lua                    # Dashboard & UI enhancements
+│       ├── zk-org.lua                    # Zettelkasten note-taking
 │       └── neo-tree.lua                  # File explorer
 ├── tmux-config/                          # Tmux configuration files
 ├── alacritty-config/                     # Alacritty terminal config
@@ -401,6 +448,17 @@ Then in Neovim, run `:checkhealth` and look for terminal capabilities confirming
   - Install Prettier globally: `npm install -g prettier`
   - Install Stylua: `cargo install stylua` or via package manager
 
+### Note-Taking with zk
+
+- **Create New Note**: Run `:ZkNew { title = "My Note" }` to create a new note
+- **List Notes**: Run `:ZkNotes` to browse all notes in your notebook
+- **Insert Link**: Run `:ZkInsertLink` to link to another note
+- **View Links**: Run `:ZkLinks` to see all links in the current note
+- **Find Backlinks**: Run `:ZkBacklinks` to find notes linking to the current note
+- **Search by Tags**: Run `:ZkTags` to list and filter notes by tags
+- **LSP Features**: When editing Markdown files, you get autocompletion, diagnostics, and hover documentation
+- **Setup**: Initialize a notebook with `zk init` in your desired directory
+
 ### Neo-tree File Explorer
 
 - **Toggle File Tree**: Press `Ctrl+N` to open/close the file explorer
@@ -443,6 +501,8 @@ end
 - [None-ls](https://github.com/nvimtools/none-ls.nvim)
 - [Snacks.nvim](https://github.com/folke/snacks.nvim)
 - [Neo-tree](https://github.com/nvim-neo-tree/neo-tree.nvim)
+- [zk-nvim](https://github.com/zk-org/zk-nvim)
+- [zk CLI](https://github.com/zk-org/zk)
 - [Ripgrep](https://github.com/BurntSushi/ripgrep)
 - [Prettier](https://prettier.io/)
 - [Stylua](https://github.com/JohnnyMorganz/StyLua)
