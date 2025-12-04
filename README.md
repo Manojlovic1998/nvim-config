@@ -180,6 +180,7 @@ require("mason-lspconfig").setup({
     "cssls",         -- CSS
     "tailwindcss",   -- Tailwind CSS
   },
+  automatic_install = true,
 })
 
 -- Enable LSP servers
@@ -202,13 +203,15 @@ vim.lsp.enable("angularls")   -- Angular language server
 local null_ls = require("null-ls")
 
 null_ls.setup({
-  null_ls.builtins.completion.spell,              -- Spell completion
-  null_ls.builtins.formatting.stylua,             -- Lua formatter
-  null_ls.builtins.formatting.prettier,           -- JS/TS/JSON/etc formatter
-  require("none-ls.diagnostics.eslint"),          -- ESLint diagnostics
+  sources = {
+    null_ls.builtins.completion.spell,              -- Spell completion
+    null_ls.builtins.formatting.stylua,             -- Lua formatter
+    null_ls.builtins.formatting.prettier,           -- JS/TS/JSON/etc formatter
+    require("none-ls.diagnostics.eslint"),          -- ESLint diagnostics
+  },
 })
 
-vim.keymap.set("n", "<leader>gf", vim.lsp.buf.format, {})
+vim.keymap.set("n", "<leader>gf", vim.lsp.buf.format, { desc = "Call code format method" })
 ```
 
 **Key features:**
